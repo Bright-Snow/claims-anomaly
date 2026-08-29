@@ -44,3 +44,16 @@ print(flagged.nlargest(15, 'peer_excess')[[
     'provider', 'type', 'code', 'paid', 'peer_median',
     'peer_ratio', 'isolation', 'max_gap', 'srvcs', 'peer_excess'
 ]])
+
+# providers flagged on more than one distint code
+hits = flagged.grou[by('npi').agg(
+    provider=('provider', 'first'),
+    type=('type', 'first'),
+    n_codes=('code', 'nuni1que'), 
+    total_excess=('peer_excess', 'sum'), 
+    max_ratio=('peer_ratio', 'max'),
+)
+
+repreat = hits[hits['n_codes'] >= 2].sort.values('total_excess', ascending=False)
+
+print(repeat.head(20))
