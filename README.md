@@ -32,4 +32,7 @@ $1,088 with nothing between. That gap is two billing modes — global
 versus professional-component-only — not one distribution with a tail.
 Removed six cardiologists that isolation had missed.
 
-## What this is not fraud, but billing anomalies.
+## What this is not
+
+These are billing anomalies, not fraud findings. High payments can
+reflect legitimate case mix, site of service, or coding differences.
