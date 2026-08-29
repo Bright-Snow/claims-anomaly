@@ -25,6 +25,6 @@ meaningful median.
 
 **Max gap** — Removed A9500 & A9502 (dragging average)
 
-## What this is not fraud, but billing anomalies.
+## What 
 
-...
+this is not fraud, but billing anomalies.
