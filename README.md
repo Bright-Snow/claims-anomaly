@@ -21,10 +21,15 @@ results were ASCs billing normally.
 **Minimum peer size** — groups under 20 providers don't have a
 meaningful median.
 
-**Isolation** — Removed cardiology & electrophysiology cluster(billed globally & professional-component-only), and ASC. 
+**Isolation** — compare each provider to the 90th percentile of its own
+peer group, not the median. Removed five cardiologists on 78431 whose
+ratios sat within 0.5% of each other; five people billing identically
+is a broken baseline, not five outliers. 
 
-**Max gap** — Removed A9500 & A9502 (dragging average)
+**Max gap** — largest jump between sorted neighbours in a peer group.
+On A9500, payments climbed smoothly from $32 to $277, then jumped to
+$1,088 with nothing between. That gap is two billing modes — global
+versus professional-component-only — not one distribution with a tail.
+Removed six cardiologists that isolation had missed.
 
-## What 
-
-this is not fraud, but billing anomalies.
+## What this is not fraud, but billing anomalies.
