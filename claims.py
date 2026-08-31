@@ -17,26 +17,28 @@ df = df.rename(columns={
     'Avg_Mdcr_Pymt_Amt': 'paid',
 })
 
-# peer baseline: same code, same provider type
-peer = df.groupby(['code', 'type'])['paid'].median()
-df['peer_median'] = df.set_index(['code', 'type']).index.map(peer)
-df['peer_ratio'] = df['paid'] / df['peer_median']
-df['peer_excess'] = (df['paid'] - df['peer_median']) * df['srvcs']
-df['peer_n'] = df.groupby(['code', 'type'])['npi'].transform('count')
-
-# isolation: how far above the rest of the high billers
-grp = df.groupby(['code', 'type'])['peer_ratio']
-df['p90'] = grp.transform(lambda s: s.quantile(0.90))
-df['isolation'] = df['peer_ratio'] / df['p90']
-
-# max_gap: largest jump between sorted neighbours, catches split billing modes
 def max_gap(s):
     v = s.sort_values().values
     if len(v) < 20 or v[0] <= 0:
         return 1.0
     return (v[1:] / v[:-1]).max()
 
-df['max_gap'] = df.groupby(['code', 'type'])['paid'].transform(max_gap)
+KEY = ['code', 'type', 'Place_Of_Srvc']
+
+peer = df.groupby(KEY)['paid'].median()
+df['peer_median'] = df.set_index(KEY).index.map(peer)
+df['peer_ratio'] = df['paid'] / df['peer_median']
+df['peer_excess'] = (df['paid'] - df['peer_median']) * df['srvcs']
+df['peer_n'] = df.groupby(KEY)['npi'].transform('count')
+
+grp = df.groupby(KEY)['peer_ratio']
+df['p90'] = grp.transform(lambda s: s.quantile(0.90))
+df['isolation'] = df['peer_ratio'] / df['p90']
+
+df['max_gap'] = df.groupby(KEY)['paid'].transform(max_gap)
+
+# peer baseline: same code, same provider type
+peer = df.groupby(['code', 'type'])['paid'].median()
 
 flagged = df[(df['peer_n'] >= 20) & (df['isolation'] >= 1.5) & (df['max_gap'] < 2.0)]
 
@@ -57,3 +59,4 @@ hits = flagged.groupby('npi').agg(
 repeat = hits[hits['n_codes'] >= 2].sort_values('total_excess', ascending=False)
 
 print(repeat.head(20))
+
