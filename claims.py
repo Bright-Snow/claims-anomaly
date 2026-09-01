@@ -37,6 +37,8 @@ df['isolation'] = df['peer_ratio'] / df['p90']
 
 df['max_gap'] = df.groupby(KEY)['paid'].transform(max_gap)
 
+df = df[~df['code'].str.match(r'^[AJQ]')]
+
 # peer baseline: same code, same provider type
 peer = df.groupby(['code', 'type'])['paid'].median()
 
@@ -59,4 +61,3 @@ hits = flagged.groupby('npi').agg(
 repeat = hits[hits['n_codes'] >= 2].sort_values('total_excess', ascending=False)
 
 print(repeat.head(20))
-
