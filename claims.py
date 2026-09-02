@@ -23,6 +23,8 @@ def max_gap(s):
         return 1.0
     return (v[1:] / v[:-1]).max()
 
+df = df[~df['code'].str.match(r'^[AJQ]')]
+
 KEY = ['code', 'type', 'Place_Of_Srvc']
 
 peer = df.groupby(KEY)['paid'].median()
@@ -37,17 +39,7 @@ df['isolation'] = df['peer_ratio'] / df['p90']
 
 df['max_gap'] = df.groupby(KEY)['paid'].transform(max_gap)
 
-df = df[~df['code'].str.match(r'^[AJQ]')]
-
-# peer baseline: same code, same provider type
-peer = df.groupby(['code', 'type'])['paid'].median()
-
 flagged = df[(df['peer_n'] >= 20) & (df['isolation'] >= 1.5) & (df['max_gap'] < 2.0)]
-
-print(flagged.nlargest(15, 'peer_excess')[[
-    'provider', 'type', 'code', 'paid', 'peer_median',
-    'peer_ratio', 'isolation', 'max_gap', 'srvcs', 'peer_excess'
-]])
 
 # providers flagged on more than one distinct code
 hits = flagged.groupby('npi').agg(
@@ -61,3 +53,19 @@ hits = flagged.groupby('npi').agg(
 repeat = hits[hits['n_codes'] >= 2].sort_values('total_excess', ascending=False)
 
 print(repeat.head(20))
+
+def explain(row):
+    return(
+        f"{row['provider']} paid {row['peer_ratio']:.1f}x peer median "
+        f"(${row['paid']:.2f} vs ${row['peer_median']:.2f}) on {row['srvcs']:.0f} services. "
+        f"Peer group: {row['peer_n']:.0f} providers, same code / specialty / place of service. "
+        f"(max gap {row['max_gap']:.2f}). "
+        f"${row['peer_excess']:,.0f} above peer-expected payment."
+    )
+
+review = flagged[(flagged['peer_ratio'] >= 1.4) & (flagged['peer_excess'] >= 2000)]
+print(f"{len(review)} of {len(flagged)} flags meet review threshold\n")
+
+for _, row in review.nlargest(20, 'peer_excess').iterrows():
+    print(explain(row))
+    print()
